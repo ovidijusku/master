@@ -28,6 +28,13 @@ In order to prevent that, give some time (approx 30 seconds) for the sharded clu
 docker-compose -f extract-docker-compose.yml up --build
 ```
 
+## Insights
+When looking at the histograms, majority of them appear to be either normal or right-skewed. 
+
+1. However, some of the histograms have very distinct outliers. F.e. `219018494` - which seemed to lost connection for over 38 minutes
+2. Others do not have normal or skewed distribution pattern. F.e. `219018494` - which seemed to be standing in place from the longitude and latitude, but navigational status was set as `Under way using engine`
+3. Some of the normal / skewed distributions have very different mean / median values comparing to other histograms. F.e. `211364330` vs `265547240` - it could be that when using different transmitting equipment, they are configured to transfer messages not at the same frequency.
+
 ## References
 
 Mongodb sharded cluster setup. Used Github [repository](https://github.com/pkdone/sharded-mongodb-docker ) as an example. 
