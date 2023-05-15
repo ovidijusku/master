@@ -1,7 +1,3 @@
-## Steps
-
-1. Mongodb sharded cluster setup. Used Github [repository](https://github.com/pkdone/sharded-mongodb-docker ) as an example. 
-
 ## Pre-start
 Make sure that Docker volume storage is clean before launching the application
 
@@ -31,3 +27,7 @@ In order to prevent that, give some time (approx 30 seconds) for the sharded clu
 ```
 docker-compose -f extract-docker-compose.yml up --build
 ```
+
+## References
+
+Mongodb sharded cluster setup. Used Github [repository](https://github.com/pkdone/sharded-mongodb-docker ) as an example. 
