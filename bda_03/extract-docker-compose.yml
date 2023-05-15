@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  controller:
+    build:
+      context: app
+    volumes:
+      - ./:/app
+    tty: true
+    command: ["python3", "app/extract.py"]
+    network_mode: "host"
