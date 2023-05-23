@@ -24,21 +24,23 @@ def create_indexes_processed_collection(client: MongoClient) -> None:
 def extract_raw_data(client: MongoClient) -> list[dict]:
     db = client[settings.DATABASE_NAME]
     vessels = db[settings.RAW_COLLECTION_NAME]
-    mmsi_query = [
-        {"$group": {"_id": "$MMSI", "count": {"$sum": 1}}},
-        {"$match": {"count": {"$gte": 100}}},
-    ]
+    
+    # filtering out MMSI values that have any nan values
+    query = {
+    "ROT": {"$eq": float('nan')},
+    "SOG": {"$eq": float('nan')},
+    "COG": {"$eq": float('nan')},
+    "heading": {"$eq": float('nan')}
+}
+    relevant_MMSI = vessels.distinct("MMSI", query)
+    
+    # filtering MMSI values that have more than 100 records
+    filtered_MMSI = [mmsi for mmsi in relevant_MMSI if vessels.count_documents({"MMSI": mmsi}) > 100]
 
-    mmsi_records = vessels.aggregate(mmsi_query)
-    mmsi_values = [record["_id"] for record in mmsi_records]
-    final_query = {
-        "MMSI": {"$in": mmsi_values},
-        "ROT": {"$not": {"$eq": float("nan")}},
-        "SOG": {"$not": {"$eq": float("nan")}},
-        "COG": {"$not": {"$eq": float("nan")}},
-        "heading": {"$not": {"$eq": float("nan")}},
-    }
-    return list(vessels.find(final_query))
+    # extracting records only for filtered MMSI values
+    filtered_MMSI_query = {"MMSI": {"$in": filtered_MMSI}}
+
+    return list(vessels.find(filtered_MMSI_query))
 
 
 def insert_preprocessed_data(client: MongoClient, data: list[dict]) -> None:
