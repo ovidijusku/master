@@ -27,10 +27,12 @@ def extract_raw_data(client: MongoClient) -> list[dict]:
 
     # extracting MMSI values that have any nan values
     query = {
-        "ROT": {"$eq": float("nan")},
-        "SOG": {"$eq": float("nan")},
-        "COG": {"$eq": float("nan")},
-        "heading": {"$eq": float("nan")},
+        "$or": [
+            {"ROT": {"$eq": float("nan")}},
+            {"SOG": {"$eq": float("nan")}},
+            {"COG": {"$eq": float("nan")}},
+            {"heading": {"$eq": float("nan")}},
+        ]
     }
     MMSI_with_nans = vessels.distinct("MMSI", query)
     print(f"How many MMSI filtered on NaN values: {len(MMSI_with_nans)}")
