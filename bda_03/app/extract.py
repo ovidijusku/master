@@ -24,23 +24,35 @@ def create_indexes_processed_collection(client: MongoClient) -> None:
 def extract_raw_data(client: MongoClient) -> list[dict]:
     db = client[settings.DATABASE_NAME]
     vessels = db[settings.RAW_COLLECTION_NAME]
-    
-    # filtering out MMSI values that have any nan values
+
+    # extracting MMSI values that have any nan values
     query = {
-    "ROT": {"$eq": float('nan')},
-    "SOG": {"$eq": float('nan')},
-    "COG": {"$eq": float('nan')},
-    "heading": {"$eq": float('nan')}
-}
-    relevant_MMSI = vessels.distinct("MMSI", query)
-    
-    # filtering MMSI values that have more than 100 records
-    filtered_MMSI = [mmsi for mmsi in relevant_MMSI if vessels.count_documents({"MMSI": mmsi}) > 100]
+        "ROT": {"$eq": float("nan")},
+        "SOG": {"$eq": float("nan")},
+        "COG": {"$eq": float("nan")},
+        "heading": {"$eq": float("nan")},
+    }
+    MMSI_with_nans = vessels.distinct("MMSI", query)
+    print(f"How many MMSI filtered on NaN values: {len(MMSI_with_nans)}")
+
+    # extracting MMSI values that have less than 100 records
+    pipeline = [
+        {"$group": {"_id": "$MMSI", "count": {"$sum": 1}}},
+        {"$match": {"count": {"$lt": 100}}},
+    ]
+    MMSI_with_low_records_count = [item["_id"] for item in vessels.aggregate(pipeline)]
+    print(
+        f"How many MMSI filtered on low records count: {len(MMSI_with_low_records_count)}"
+    )
+
+    # joining irrelevant MMSIs
+    irrelevant_MMSI = list(set(MMSI_with_nans + MMSI_with_low_records_count))
+    print(f"How many MMSI filtered in total: {len(irrelevant_MMSI)}")
 
     # extracting records only for filtered MMSI values
-    filtered_MMSI_query = {"MMSI": {"$in": filtered_MMSI}}
-
-    return list(vessels.find(filtered_MMSI_query))
+    result = list(vessels.find({"MMSI": {"$nin": irrelevant_MMSI}}))
+    print(f"How many records passed filters: {len(result)}")
+    return result
 
 
 def insert_preprocessed_data(client: MongoClient, data: list[dict]) -> None:
