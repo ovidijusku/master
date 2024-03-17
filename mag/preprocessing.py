@@ -37,7 +37,10 @@ def preprocessing_pipe(
 
     for location in location_permutations:
         img = reader.read_rect(
-            location, TILE_SIZE, resolution=1 / magnification, units="power"
+            location,
+            TILE_SIZE,
+            resolution=info_dict["mpp"][0] * magnification,
+            units="mpp",
         )
         white_portion = (np.sum(np.mean(img, axis=-1) > 230)) / (
             img.shape[0] * img.shape[1]
