@@ -2,14 +2,13 @@ import itertools
 import random
 import logging
 import os
+import argparse
 
 import numpy as np
 from tiatoolbox.wsicore.wsireader import WSIReader
 
 
 TILE_SIZE = (224, 224)
-MAGNIFICATION = 4
-TILES_COUNT = 16
 OUTPUT_FOLDER = "processed_arrays"
 
 logging.basicConfig(
@@ -58,18 +57,28 @@ def preprocessing_pipe(
     processed_image_arrays = np.stack(processed_image_arrays, axis=0)
     if processed_tiles < tiles_count:
         logger.warning(
-            f"Required tiles count was not reached, using {processed_tiles} instead of {TILES_COUNT}"
+            f"Required tiles count was not reached, using {processed_tiles} instead of {tiles_count}"
         )
 
     return processed_image_arrays
 
 
 if __name__ == "__main__":
-    files = [f"images/{file}" for file in os.listdir("images")]
+    parser = argparse.ArgumentParser(description="Process some arguments.")
+    parser.add_argument("--mag", type=int, help="Magnification")
+    parser.add_argument("--tile-count", type=int, help="Tile count")
+    args = parser.parse_args()
+
+    mag = args.mag
+    tile_count = args.tile_count
+
+    files = [f"images/{file}" for file in os.listdir("images") if file.endswith(".svs")]
     if not os.path.exists(OUTPUT_FOLDER):
         os.mkdir(OUTPUT_FOLDER)
     for file in files:
         filename = file.replace("images/", "").split(".")[0]
-        filename += f"_{MAGNIFICATION}_{TILES_COUNT}.npy"
-        arr = preprocessing_pipe(file, TILES_COUNT, MAGNIFICATION)
+        filename += f"_{mag}_{tile_count}.npy"
+        if os.path.exists(f"{OUTPUT_FOLDER}/{filename}"):
+            continue
+        arr = preprocessing_pipe(file, tile_count, mag)
         np.save(f"{OUTPUT_FOLDER}/{filename}", arr)
