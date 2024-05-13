@@ -108,9 +108,14 @@ stat$statistics
 stat <- Ztwosample(x=y15_fd_before, y=y15_fd_after, t.seq = y15_per)
 stat
 
-# H0: mean(temp)_Europe = m(temp)_Africa
-# H1: mean(temp)_Europe =/= mean(temp)_Africa
-# Assumption: representative sample
+#
+#
+#
+# Comparing temperature derivatives of different regions
+#
+#
+#
+
 
 categorize_region <- function(country) {
   region_mapping <- list(
@@ -158,26 +163,27 @@ y30_fd   = y30_List$fd
 plot(y30_fd)
 legend("topright", legend = y30_fd$fdnames[[2]], col = 1:length(y30_fd$fdnames[[2]]), lty = 1)
 
-unique_regions <- unique(y30_fd$fdnames[[2]])
-fd_list <- list()
-for (region in unique_regions) {
-  fd_subset <- y30_fd[y30_fd$fdnames[[2]] == region]
-  fd_list[[region]] <- fd_subset
-}
+y30_fd_deriv <- deriv.fd(y30_fd)
+plot(y30_fd_deriv)
+legend("topright", legend = y30_fd_deriv$fdnames[[2]], col = 1:length(y30_fd_deriv$fdnames[[2]]), lty = 1)
 
-stat <- L2.stat.twosample(x=y30_fd[y30_fd$fdnames[[2]] == "Europe"], y=y30_fd[y30_fd$fdnames[[2]] == "Africa"],
-                          t.seq = y30_per, method=1)
-stat
-
-# H0: mean(temp)_Europe = m(temp)_Asia
-# H1: mean(temp)_Europe =/= mean(temp)_Asia
+# H0: derivative(temp)_Europe = derivative(temp)_Asia
+# H1: derivative(temp)_Europe =/= derivative(temp)_Asia
 # Assumption: representative sample
-stat <- L2.stat.twosample(x=y30_fd[y30_fd$fdnames[[2]] == "Europe"], y=y30_fd[y30_fd$fdnames[[2]] == "Asia"],
-                          t.seq = y30_per, method=2, replications=500)
-stat
-
-# H0: mean(temp)_Africa = mean(temp)_Asia
-# H1: mean(temp)_Africa =/= mean(temp)_Asia
-# Assumption: representative sample
-stat <- L2.stat.twosample(x=y30_fd[y30_fd$fdnames[[2]] == "Africa"], y=y30_fd[y30_fd$fdnames[[2]] == "Asia"],
+stat <- L2.stat.twosample(x=y30_fd_deriv[y30_fd_deriv$fdnames[[2]] == "Europe"], y=y30_fd_deriv[y30_fd_deriv$fdnames[[2]] == "Africa"],
                           t.seq = y30_per, method=2, replications=50)
+stat
+
+# H0: derivative(temp)_Europe = derivative(temp)_Asia
+# H1: derivative(temp)_Europe =/= derivative(temp)_Asia
+# Assumption: representative sample
+stat <- L2.stat.twosample(x=y30_fd_deriv[y30_fd_deriv$fdnames[[2]] == "Europe"], y=y30_fd_deriv[y30_fd_deriv$fdnames[[2]] == "Asia"],
+                          t.seq = y30_per, method=2, replications=50)
+stat
+
+# H0: derivative(temp)_Africa = derivative(temp)_Asia
+# H1: derivative(temp)_Africa =/= derivative(temp)_Asia
+# Assumption: representative sample
+stat <- L2.stat.twosample(x=y30_fd_deriv[y30_fd_deriv$fdnames[[2]] == "Africa"], y=y30_fd_deriv[y30_fd_deriv$fdnames[[2]] == "Asia"],
+                          t.seq = y30_per, method=2, replications=50)
+stat
